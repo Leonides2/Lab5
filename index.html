@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat Socket.IO UNA</title>
+  <style>
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+    
+    body { 
+      font: 13px Helvetica, Arial; 
+      background-color: #f5f5f5;
+    }
+    
+    form { 
+      background: #2c3e50; 
+      padding: 10px; 
+      position: fixed; 
+      bottom: 0; 
+      width: 100%; 
+      display: flex;
+      gap: 5px;
+    }
+    
+    form input { 
+      border: 1px solid #34495e;
+      border-radius: 4px;
+      padding: 12px;
+      font-size: 14px;
+    }
+    
+    form button { 
+      width: 15%; 
+      background: #3498db; 
+      color: white;
+      border: none; 
+      border-radius: 4px;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    
+    form button:hover {
+      background: #2980b9;
+    }
+    
+    #messages { 
+      list-style-type: none; 
+      margin: 0; 
+      padding: 10px;
+      margin-bottom: 70px;
+      max-height: calc(100vh - 70px);
+      overflow-y: auto;
+    }
+    
+    #messages li { 
+      padding: 10px 15px;
+      margin: 5px 0;
+      border-radius: 4px;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      word-break: break-word;
+    }
+    
+    #messages li:nth-child(odd) { 
+      background: #f8f9fa;
+    }
+    
+    #nombre, #m { 
+      display: inline-block;
+      font-size: 14px;
+    }
+    
+    #m {
+      width: 65%; 
+      margin-right: 0;
+    }
+    
+    #nombre {
+      width: 20%;
+    }
+    
+    .media-container {
+      max-width: 100%;
+      margin: 10px 0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .media-container img {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 4px;
+      display: block;
+    }
+    
+    .media-container video {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 4px;
+      display: block;
+    }
+    
+    .message-time {
+      font-size: 11px;
+      color: #7f8c8d;
+      margin-left: 10px;
+    }
+    
+    .typing-indicator {
+      color: #7f8c8d;
+      font-style: italic;
+      padding: 5px 15px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <ul id="messages">
+    <li>Bienvenido al chat. Escribe un mensaje para comenzar.</li>
+  </ul>
+  
+  <form action="" id="chatForm">
+    <input type="text" id="nombre" autocomplete="off" placeholder="Tu nombre (opcional)" />
+    <input type="text" id="m" autocomplete="off" placeholder="Escribe un mensaje o pega una URL de imagen/video" />
+    <button type="submit">Enviar</button>
+  </form>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    // Variables globales
+    let colorHexTxt = "";
+    let isTyping = false;
+    let typingTimer;
+    const TYPING_TIMER_LENGTH = 1000; // 1 segundo
+    
+    // Genera colores aleatorios en hexadecimal
+    function getRandomColor() {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+    
+    // Escapar HTML para prevenir XSS
+    function escapeHtml(unsafe) {
+      if (!unsafe) return '';
+      return unsafe
+        .toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+    
+    // Función para hacer scroll al final del chat
+    function scrollToBottom() {
+      const messages = document.getElementById('messages');
+      if (messages) {
+        messages.scrollTop = messages.scrollHeight;
+      }
+    }
+    
+    // Inicialización cuando el DOM esté listo
+    $(function() {
+      // Conectar al servidor
+      const socket = io();
+      
+      // Generar un color aleatorio para el usuario
+      if (!colorHexTxt) {
+        colorHexTxt = getRandomColor();
+      }
+    
+      // Configurar el formulario
+      $('form').submit(function(e) {
+        e.preventDefault();
+        
+        const nombreTxt = $('#nombre').val() || 'Anónimo';
+        const mensajeTxt = $('#m').val();
+        
+        if (mensajeTxt.trim() === '') return false;
+        
+        // Enviar mensaje al servidor
+        socket.emit('chat message', {
+          nombre: nombreTxt,
+          mensaje: mensajeTxt,
+          color: colorHexTxt,
+          timestamp: new Date().toISOString()
+        });
+        
+        // Limpiar el campo de mensaje
+        $('#m').val('').focus();
+        
+        // Desactivar estado de escritura
+        isTyping = false;
+        socket.emit('stop typing');
+        
+        return false;
+      });
+      
+      // Detectar cuando el usuario está escribiendo
+      $('#m').on('input', function() {
+        if (!isTyping) {
+          isTyping = true;
+          const nombreTxt = $('#nombre').val() || 'Alguien';
+          socket.emit('typing', { username: nombreTxt });
+        }
+        
+        // Reiniciar temporizador
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+          isTyping = false;
+          socket.emit('stop typing');
+        }, TYPING_TIMER_LENGTH);
+      });
+      
+      // Evento cuando se recibe un mensaje
+      socket.on('chat message', function(msg) {
+        try {
+          const msgJson = typeof msg === 'string' ? JSON.parse(msg) : msg;
+          const time = new Date(msgJson.timestamp).toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          });
+          
+          // Mostrar el mensaje directamente (el procesamiento está en el backend)
+          $('#messages').append($('<li>').html(`
+            <div>
+              <b style="color: ${msgJson.color}">${escapeHtml(msgJson.nombre)}</b>
+              <span class="message-time">${time}</span>
+            </div>
+            <div>${msgJson.mensaje || ''}</div>
+          `));
+          
+          scrollToBottom();
+          
+        } catch (e) {
+          console.error('Error al procesar el mensaje:', e);
+        }
+      });
+      
+      // Evento cuando alguien está escribiendo
+      socket.on('typing', function(data) {
+        $('.typing-indicator').remove();
+        if (data.username !== ($('#nombre').val() || 'Anónimo')) {
+          $('#messages').append($('<li class="typing-indicator">').text(`${data.username} está escribiendo...`));
+          scrollToBottom();
+        }
+      });
+      
+      // Evento cuando alguien deja de escribir
+      socket.on('stop typing', function() {
+        $('.typing-indicator').remove();
+      });
+      
+      // Enfocar el campo de mensaje al cargar
+      $('#m').focus();
+    });
+  </script>
+</body>
+</html>
