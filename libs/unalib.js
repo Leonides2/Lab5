@@ -163,7 +163,7 @@ module.exports = {
         
         try {
           const url = new URL(match[0]);
-          
+
           // Verificar si es YouTube
           if (this.isYouTubeUrl(url.href)) {
             const videoId = this.getYouTubeVideoId(url.href);
@@ -180,6 +180,25 @@ module.exports = {
               continue;
             }
           }
+
+          if (this.is_valid_url_image(url.href)) {
+            result += this.getImageTag(url.href);
+            lastIndex = urlRegex.lastIndex;
+            continue;
+          }
+          if (this.is_valid_video_url(url.href)) {
+            result += this.getVideoTag(url.href);
+            lastIndex = urlRegex.lastIndex;
+            continue;
+          }
+
+          if (!this.isSafeUrl(url.href)) {
+            result += this.sanitizeText(match[0]);
+            lastIndex = urlRegex.lastIndex;
+            continue;
+          }
+
+
           
           // Para cualquier otra URL, crear un enlace simple
           result += this.createSafeLink(url.href);
