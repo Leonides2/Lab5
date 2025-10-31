@@ -1,0 +1,72 @@
+name: Express.js Docker Build & Push
+
+on:
+  # Se ejecuta cada vez que se hace push a la rama 'main'
+  push:
+    branches: [ main ]
+  
+  # Permite ejecutar el workflow manualmente desde la interfaz de GitHub
+  workflow_dispatch:
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+        
+      - name: Configurar Node.js
+        # Instala Node.js para poder ejecutar comandos de npm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Ajusta esto a la versión de Node que necesite tu proyecto Express.js
+          
+      - name: Generar package-lock.json para Docker build
+        # Ejecuta 'npm install' para generar el archivo package-lock.json 
+        # que es requerido por el 'npm ci' dentro de tu Dockerfile.
+        # Este archivo existe solo durante la ejecución del workflow.
+        run: npm install
+
+      - name: Configurar Docker Buildx (Herramienta de construcción)
+        # Se usa para construir la imagen de manera más eficiente
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login a Docker Hub
+        uses: docker/login-action@v3
+        with:
+          # Estas credenciales deben estar configuradas como Secrets de GitHub
+          username: ${{ secrets.DOCKER_USERNAME }}
+          # Es recomendable usar un Token de Acceso Personal (PAT) en lugar de la contraseña
+          password: ${{ secrets.DOCKER_PASSWORD }} 
+
+      - name: Determinar y generar tags para la imagen
+        id: meta
+        run: |
+          # 1. Obtener el nombre del repositorio (ej: mi-app-express)
+          # Se convierte a minúsculas, lo cual es obligatorio para los nombres de imágenes de Docker
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d '/' -f 2 | tr '[:upper:]' '[:lower:]')
+          # 2. Generar un SHA corto para la etiqueta única
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c 1-7)
+          
+          # 3. Formato de etiquetas: usuario_docker/repo:latest, usuario_docker/repo:short_sha
+          TAGS="${{ secrets.DOCKER_USERNAME }}/${REPO_NAME}:latest,${{ secrets.DOCKER_USERNAME }}/${REPO_NAME}:${SHORT_SHA}"
+          
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "Se construirán y enviarán las siguientes etiquetas: ${TAGS}"
+
+      - name: Construir y subir (Push) la imagen a Docker Hub
+        uses: docker/build-push-action@v5
+        with:
+          # Directorio de contexto de Docker (la raíz del repositorio)
+          context: .
+          # Bandera para indicar que la imagen debe ser subida después de construirse
+          push: true
+          # Usar los tags generados en el paso anterior
+          tags: ${{ steps.meta.outputs.tags }}
+          # Opcional: Especificar el Dockerfile si no se llama 'Dockerfile'
+          # file: ./Dockerfile
+          
+          # Configuración de caché para acelerar futuras construcciones
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
