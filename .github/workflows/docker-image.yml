@@ -32,7 +32,7 @@ jobs:
         id: meta
         run: |
           # 1. Obtener el nombre del repositorio (ej: mi-app-express)
-          REPO_NAME=$(echo "${{ github.repository }}" | cut -d '/' -f 2)
+          REPO_NAME=$(echo "${{ github.repository }}" | cut -d '/' -f 2 | tr '[:upper:]' '[:lower:]')
           # 2. Generar un SHA corto para la etiqueta única
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c 1-7)
           
