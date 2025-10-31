@@ -28,6 +28,18 @@ jobs:
         # Este archivo existe solo durante la ejecución del workflow.
         run: npm install
 
+      - name: Ejecutar Análisis de Seguridad (SAST) con Snyk (Vulnerabilidades de dependencias)
+        # Escanea el proyecto para encontrar vulnerabilidades conocidas en las dependencias de npm.
+        uses: snyk/actions/node@master
+        env:
+          # Requiere el secreto SNYK_TOKEN (Token de API de Snyk)
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          # 'test' escanea package.json/package-lock.json para vulnerabilidades.
+          command: test 
+          # Falla el workflow si se encuentran vulnerabilidades de gravedad 'high' o 'critical'.
+          args: --all-projects --fail-on=high 
+
       - name: Configurar Docker Buildx (Herramienta de construcción)
         # Se usa para construir la imagen de manera más eficiente
         uses: docker/setup-buildx-action@v3
