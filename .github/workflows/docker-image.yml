@@ -38,7 +38,7 @@ jobs:
           # 'test' escanea package.json/package-lock.json para vulnerabilidades.
           command: test 
           # Falla el workflow si se encuentran vulnerabilidades de gravedad 'high' o 'critical'.
-          args: --all-projects --fail-on=high 
+          args: --all-projects --fail-on=all 
 
       - name: Configurar Docker Buildx (Herramienta de construcción)
         # Se usa para construir la imagen de manera más eficiente
