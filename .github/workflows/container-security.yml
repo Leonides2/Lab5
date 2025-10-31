@@ -1,4 +1,4 @@
-nname: Container Security Pipeline
+name: Container Security Pipeline
 
 on:
   push:
