@@ -43,7 +43,7 @@ jobs:
           echo "Se construirán y enviarán las siguientes etiquetas: ${TAGS}"
 
       - name: Construir y subir (Push) la imagen a Docker Hub
-        uses: docker/build-and-push-action@v5
+        uses: docker/build-push-action@v5
         with:
           # Directorio de contexto de Docker (la raíz del repositorio)
           context: .
