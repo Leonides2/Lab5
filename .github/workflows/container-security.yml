@@ -21,9 +21,11 @@ jobs:
         
     - name: Install dependencies
       run: npm ci
+      working-directory: ./test   
       
     - name: Run tests
       run: npm test
+      working-directory: ./test  
 
   build-and-push:
     needs: test
@@ -46,18 +48,19 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
-        context: .
+        context: ./test  # <-- AQUÍ EL CAMBIO
         push: true
         tags: |
-          ${{ secrets.DOCKERHUB_USERNAME }}/lab5:development
+          ${{ secrets.DOCKERHUB_USERNAME }}/lab5:latest
           ${{ secrets.DOCKERHUB_USERNAME }}/lab5:${{ github.sha }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
   container-security-scan:
-    needs: build-and-push
-    runs-on: ubuntu-linux
+    needs: test
+    runs-on: ubuntu-latest
     name: Container Security Scan with Trivy
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
