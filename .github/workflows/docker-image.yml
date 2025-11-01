@@ -82,3 +82,16 @@ jobs:
           # Configuración de caché para acelerar futuras construcciones
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+          
+      - name: Disparar (Trigger) el Workflow de Despliegue en Azure
+        # Este paso notifica a otro workflow (que tú crearás) que la imagen está lista.
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          # Usamos el token automático de GitHub. Asegúrate que las 'Workflow permissions' 
+          # en la configuración del repo estén en 'Read and write'.
+          token: ${{ secrets.GITHUB_TOKEN }} 
+          # Nombre del evento que el otro workflow debe escuchar
+          event-type: deploy_azure_container
+          # Información que se enviará al workflow de despliegue
+          client-payload: '{"image_tag": "${{ steps.meta.outputs.tags }}", "repository": "${{ github.repository }}"}'

@@ -1,0 +1,35 @@
+name: Despliegue a Azure Container App
+
+on:
+  # El segundo workflow debe escuchar el evento 'repository_dispatch'
+  repository_dispatch:
+    types: [deploy_azure_container]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Leer datos del evento de trigger
+        id: event_data
+        run: |
+          # El nombre completo de la imagen con tags se envía en el payload del evento
+          IMAGE_TAG=$(jq -r '.client_payload.image_tag' $GITHUB_EVENT_PATH)
+          echo "La imagen a desplegar es: $IMAGE_TAG"
+          echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      # 1. Login a Azure (Requiere secreto AZURE_CREDENTIALS)
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          
+      # 2. Despliegue a Azure Container App
+      - name: Desplegar imagen a Azure Container App
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          # Sustituye estos valores con los de tu entorno Azure
+          resourceGroup: 'UNA-CHAT'
+          containerAppName: 'una-chat-app'
+          # Se usa el tag de la imagen que se leyó del evento disparador
+          imageToDeploy: ${{ steps.event_data.outputs.image-tag }} 
