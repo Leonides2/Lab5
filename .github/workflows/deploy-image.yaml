@@ -45,3 +45,7 @@ jobs:
           containerAppName: 'una-chat-app'
           # Se usa el tag de la imagen que se leyó del evento disparador
           imageToDeploy: ${{ steps.event_data.outputs.image-tag }} 
+          targetPort: 3000
+          
+
+          environmentVariables: PORT=3000
