@@ -48,4 +48,4 @@ jobs:
           targetPort: 3000
           
 
-          # environmentVariables: PORT=3000
+          environmentVariables: PORT=3000
