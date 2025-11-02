@@ -1,8 +1,9 @@
 name: Express.js Docker Build & Push
 
 on:
+  push:
+      branches: [ main ]
   workflow_dispatch:
-  types: [security_container]
 
 
 jobs:
@@ -95,6 +96,4 @@ jobs:
           # en la configuración del repo estén en 'Read and write'.
           token: ${{ secrets.GITHUB_TOKEN }} 
           # Nombre del evento que el otro workflow debe escuchar
-          event-type: deploy_azure_container
-          # Información que se enviará al workflow de despliegue
-          client-payload: '{"image_tag": "${{ steps.meta.outputs.tags }}", "repository": "${{ github.repository }}"}'
+          event-type: container-security-scan

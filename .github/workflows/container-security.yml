@@ -1,9 +1,9 @@
 name: Container Security Scan
 
 on:
-  push:
-    branches: [ main ]
+
   workflow_dispatch:
+  types: [container-security-scan]
 
 jobs:
   container-security-scan:

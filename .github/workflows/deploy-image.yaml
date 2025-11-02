@@ -10,27 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Leer datos del evento de trigger
-        id: event_data
-        run: |
-          # El nombre completo de la imagen con tags se envía en el payload del evento
-          IMAGE_LIST=$(jq -r '.client_payload.image_tag' "$GITHUB_EVENT_PATH")
-          echo "Payload image list: $IMAGE_LIST"
-
-          # take only the first comma-separated entry and trim leading/trailing spaces
-          IMAGE_TAG=$(echo "$IMAGE_LIST" | cut -d',' -f1 | sed 's/^ *//;s/ *$//')
-
-          # basic validation: non-empty and contains a tag (has a colon)
-          if [[ -z "$IMAGE_TAG" || "$IMAGE_TAG" != *:* ]]; then
-            echo "Error: IMAGE_TAG is missing or invalid: '$IMAGE_TAG'"
-            exit 1
-          fi
-
-          echo "La imagen a desplegar es: $IMAGE_TAG"
-          # set output to be used by the deploy step
-          echo "image-tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
-
-      # 1. Login a Azure (Requiere secreto AZURE_CREDENTIALS)
       - name: Azure Login
         uses: azure/login@v1
         with:
@@ -44,7 +23,7 @@ jobs:
           resourceGroup: 'UNA-CHAT'
           containerAppName: 'una-chat-app'
           # Se usa el tag de la imagen que se leyó del evento disparador
-          imageToDeploy: ${{ steps.event_data.outputs.image-tag }} 
+          imageToDeploy: ${{ secrets.DOCKER_USERNAME }}/lab5:latest
           targetPort: 3000
           
 
