@@ -236,7 +236,7 @@
               <b style="color: ${msgJson.color}">${escapeHtml(msgJson.nombre)}</b>
               <span class="message-time">${time}</span>
             </div>
-           <div>${escapeHtml(msgJson.mensaje || '')}
+           <div>${msgJson.mensaje || ''}
           `));
           
           scrollToBottom();
