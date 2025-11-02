@@ -19,14 +19,14 @@ jobs:
 
       - name: Pull the latest image
         # Usa el tag del payload
-        run: docker pull ${{ steps.event_data.outputs.image-ref }}
+        run: docker pull ${{ secrets.DOCKER_USERNAME }}/lab5:latest || true
 
       - name: Run Trivy vulnerability scanner
         id: trivy-scan
         uses: aquasecurity/trivy-action@master
         with:
           # Usa el tag del payload
-          image-ref: ${{ steps.event_data.outputs.image-ref }}
+          image-ref: ${{ secrets.DOCKER_USERNAME }}/lab5:latest
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
