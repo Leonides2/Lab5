@@ -18,7 +18,7 @@ const users = new Map();
 
 // Middleware para servir archivos estáticos
 function setupMiddleware(app) {
-  app.use(express.static('.'));
+  app.use(express.static('./public'));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 }
