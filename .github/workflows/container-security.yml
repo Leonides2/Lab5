@@ -39,6 +39,7 @@ jobs:
           vuln-type: 'os,library'
           exit-code: 1 # Si Trivy encuentra HIGH/CRITICAL, falla el paso inmediatamente
           ignore-unfixed: false
+          skip-setup-trivy: true
 
       - name: Upload Trivy scan results to GitHub Security tab
         # Se ejecuta incluso si el paso anterior falló (para subir los resultados)
