@@ -57,6 +57,13 @@
       }
     }
 
+    function sanitizeMessage(message) {
+      if (message.includes('<script>')) {
+        return escapeHtml(message);
+      }
+      return message;
+    }
+
     // Inicialización cuando el DOM esté listo
     $(function () {
       // Conectar al servidor
@@ -140,14 +147,15 @@
             hour: '2-digit',
             minute: '2-digit'
           });
-
+          
+          const mensaje  = msgJson.mensaje;
           // Mostrar el mensaje directamente (el procesamiento está en el backend)
           $('#messages').append($('<li>').html(`
             <div>
               <b style="color: ${msgJson.color}">${escapeHtml(msgJson.nombre)}</b>
               <span class="message-time">${time}</span>
             </div>
-           <div>${msgJson.mensaje || ''}
+           <div>${sanitizeMessage(mensaje) || ''}
           `));
 
           scrollToBottom();

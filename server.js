@@ -4,6 +4,7 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
+import logger from './libs/logger.js';
 import { fileURLToPath } from 'url';
 import { validateMessage, getRandomColor } from './libs/unalib.js';
 
@@ -65,7 +66,7 @@ function setupSocketHandlers(io) {
         io.emit('chat message', JSON.parse(processedMsg));
         
       } catch (error) {
-        console.error('Error al procesar el mensaje:', error);
+        logger.info('Error al procesar el mensaje:', error);
         socket.emit('error', { message: 'Error al procesar el mensaje' });
       }
     });
@@ -83,7 +84,7 @@ function setupSocketHandlers(io) {
     
     // Manejar desconexiones
     socket.on('disconnect', () => {
-      console.log('Usuario desconectado');
+      logger.info('Usuario desconectado');
     });
   });
 }
@@ -107,18 +108,18 @@ function createSocket(server) {
 // Manejo de errores globales
 function setupProcessHandlers() {
   process.on('uncaughtException', (error) => {
-    console.error('Error no capturado:', error);
+    logger.info('Error no capturado:', error);
   });
   
   process.on('unhandledRejection', (reason) => {
-    console.error('Promesa rechazada no manejada:', reason);
+    logger.info('Promesa rechazada no manejada:', reason);
   });
 }
 
 function startServer(server, port = PORT) {
   server.listen(port, '0.0.0.0', () => {
-    console.log(`Servidor escuchando en http://localhost:${port}`);
-    console.log(`Entorno: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`Servidor escuchando en http://localhost:${port}`);
+    logger.info(`Entorno: ${process.env.NODE_ENV || 'development'}`);
   });
   return server;
 }
