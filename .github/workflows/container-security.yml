@@ -50,6 +50,10 @@ jobs:
           # Si hay vulnerabilidades CRITICAL o HIGH, falla el paso
           if [ -f "trivy-results.sarif" ] && [ -s "trivy-results.sarif" ]; then
             echo "Vulnerabilidades críticas o altas detectadas. Revisa los resultados en la pestaña Security."
+            echo "::error::Vulnerabilidades críticas o altas detectadas. Revisa los resultados en la pestaña Security."
+            for trivy-results.sarif in $(cat trivy-results.sarif); do
+              echo "Vulnerabilidad: ${trivy-results.sarif}"
+            done
             exit 1
           fi
 
