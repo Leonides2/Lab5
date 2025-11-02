@@ -7,59 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./test
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        cache-dependency-path: 'package-lock.json'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run tests
-      run: npm test
-
-  build-and-push:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/development' || github.ref == 'refs/heads/main'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./test
-        push: true
-        tags: |
-          ${{ secrets.DOCKER_USERNAME }}/lab5:latest
-          ${{ secrets.DOCKER_USERNAME }}/lab5:${{ github.sha }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
   container-security-scan:
-    needs: test
     runs-on: ubuntu-latest
     name: Container Security Scan with Trivy
     
@@ -89,3 +37,9 @@ jobs:
           format: 'table'
           exit-code: 0
           severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+      
+      - name: Disparar (Trigger) el Workflow de Despliegue en Azure
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} 
+          event-type: security_container

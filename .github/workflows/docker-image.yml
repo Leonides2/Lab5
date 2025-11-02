@@ -1,12 +1,9 @@
 name: Express.js Docker Build & Push
 
 on:
-  # Se ejecuta cada vez que se hace push a la rama 'main'
-  push:
-    branches: [ main ]
-  
-  # Permite ejecutar el workflow manualmente desde la interfaz de GitHub
   workflow_dispatch:
+  types: [security_container]
+
 
 jobs:
   build_and_push:
