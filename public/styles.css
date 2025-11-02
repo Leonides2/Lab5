@@ -1,113 +1,115 @@
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
-  }
-  
-  body { 
-    font: 13px Helvetica, Arial; 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font: 13px Helvetica, Arial;
     background-color: #f5f5f5;
-  }
-  
-  form { 
-    background: #2c3e50; 
-    padding: 10px; 
-    position: fixed; 
-    bottom: 0; 
-    width: 100%; 
+}
+
+form {
+    background: #2c3e50;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
     display: flex;
     gap: 5px;
-  }
-  
-  form input { 
+}
+
+form input {
     border: 1px solid #34495e;
     border-radius: 4px;
     padding: 12px;
     font-size: 14px;
-  }
-  
-  form button { 
-    width: 15%; 
-    background: #3498db; 
+}
+
+form button {
+    width: 15%;
+    background: #3498db;
     color: white;
-    border: none; 
+    border: none;
     border-radius: 4px;
     padding: 10px;
     cursor: pointer;
     font-weight: bold;
     transition: background 0.3s;
-  }
-  
-  form button:hover {
+}
+
+form button:hover {
     background: #2980b9;
-  }
-  
-  #messages { 
-    list-style-type: none; 
-    margin: 0; 
+}
+
+#messages {
+    list-style-type: none;
+    margin: 0;
     padding: 10px;
     margin-bottom: 70px;
     max-height: calc(100vh - 70px);
     overflow-y: auto;
-  }
-  
-  #messages li { 
+}
+
+#messages li {
     padding: 10px 15px;
     margin: 5px 0;
     border-radius: 4px;
     background: white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     word-break: break-word;
-  }
-  
-  #messages li:nth-child(odd) { 
+}
+
+#messages li:nth-child(odd) {
     background: #f8f9fa;
-  }
-  
-  #nombre, #m { 
+}
+
+#nombre,
+#m {
     display: inline-block;
     font-size: 14px;
-  }
-  
-  #m {
-    width: 65%; 
+}
+
+#m {
+    width: 65%;
     margin-right: 0;
-  }
-  
-  #nombre {
+}
+
+#nombre {
     width: 20%;
-  }
-  
-  .media-container {
+}
+
+.media-container {
     max-width: 100%;
     margin: 10px 0;
     border-radius: 4px;
     overflow: hidden;
-  }
-  
-  .media-container img {
+}
+
+.media-container img {
     max-width: 100%;
     max-height: 300px;
     border-radius: 4px;
     display: block;
-  }
-  
-  .media-container video {
+}
+
+.media-container video {
     max-width: 100%;
     max-height: 300px;
     border-radius: 4px;
     display: block;
-  }
-  
-  .message-time {
+}
+
+.message-time {
     font-size: 11px;
     color: #7f8c8d;
     margin-left: 10px;
-  }
-  
-  .typing-indicator {
+}
+
+.typing-indicator {
     color: #7f8c8d;
     font-style: italic;
     padding: 5px 15px;
-    display: none;
-  }
+    font-size: 14px;
+    opacity: 0.8;
+}

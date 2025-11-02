@@ -42,8 +42,6 @@ function setupCors(app) {
 // Manejo de conexiones de Socket.IO
 function setupSocketHandlers(io) {
   io.on('connection', (socket) => {
-    console.log('Nuevo usuario conectado');
-    
     // Generar un color aleatorio para el usuario
     const userColor = getRandomColor();
     

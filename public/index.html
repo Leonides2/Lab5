@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Chat Socket.IO UNA</title>
+  <title>UNA-CHAT</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="img/favicon.svg">
 </head>
+
 <body>
   <ul id="messages">
     <li>Bienvenido al chat. Escribe un mensaje para comenzar.</li>
   </ul>
-  
+
   <form action="" id="chatForm">
     <input type="text" id="nombre" autocomplete="off" placeholder="Tu nombre (opcional)" />
     <input type="text" id="m" autocomplete="off" placeholder="Escribe un mensaje o pega una URL de imagen/video" />
@@ -24,7 +26,7 @@
     let isTyping = false;
     let typingTimer;
     const TYPING_TIMER_LENGTH = 1000; // 1 segundo
-    
+
     // Genera colores aleatorios en hexadecimal
     function getRandomColor() {
       const letters = '0123456789ABCDEF';
@@ -34,7 +36,7 @@
       }
       return color;
     }
-    
+
     // Escapar HTML para prevenir XSS
     function escapeHtml(unsafe) {
       if (!unsafe) return '';
@@ -46,7 +48,7 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
     }
-    
+
     // Función para hacer scroll al final del chat
     function scrollToBottom() {
       const messages = document.getElementById('messages');
@@ -54,26 +56,26 @@
         messages.scrollTop = messages.scrollHeight;
       }
     }
-    
+
     // Inicialización cuando el DOM esté listo
-    $(function() {
+    $(function () {
       // Conectar al servidor
       const socket = io();
-      
+
       // Generar un color aleatorio para el usuario
       if (!colorHexTxt) {
         colorHexTxt = getRandomColor();
       }
-    
+
       // Configurar el formulario
-      $('form').submit(function(e) {
+      $('form').submit(function (e) {
         e.preventDefault();
-        
+
         const nombreTxt = $('#nombre').val() || 'Anónimo';
         const mensajeTxt = $('#m').val();
-        
+
         if (mensajeTxt.trim() === '') return false;
-        
+
         // Enviar mensaje al servidor
         socket.emit('chat message', {
           nombre: nombreTxt,
@@ -81,76 +83,98 @@
           color: colorHexTxt,
           timestamp: new Date().toISOString()
         });
-        
+
         // Limpiar el campo de mensaje
         $('#m').val('').focus();
-        
+
         // Desactivar estado de escritura
         isTyping = false;
         socket.emit('stop typing');
-        
+
         return false;
       });
-      
+
       // Detectar cuando el usuario está escribiendo
-      $('#m').on('input', function() {
-        if (!isTyping) {
+      $('#m').on('input', function () {
+        const nombreTxt = $('#nombre').val() || 'Alguien';
+        const message = $(this).val().trim();
+
+        // Si hay texto y no estábamos escribiendo, notificar que empezamos a escribir
+        if (message && !isTyping) {
           isTyping = true;
-          console.log('isTyping', isTyping);
-          const nombreTxt = $('#nombre').val() || 'Alguien';
           socket.emit('typing', { username: nombreTxt });
         }
-        
-        // Reiniciar temporizador
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(() => {
+        // Si no hay texto y estábamos escribiendo, notificar que paramos
+        else if (!message && isTyping) {
           isTyping = false;
           socket.emit('stop typing');
-        }, TYPING_TIMER_LENGTH);
+        }
+
+        // Reiniciar el temporizador solo si hay texto
+        clearTimeout(typingTimer);
+        if (message) {
+          typingTimer = setTimeout(() => {
+            if (isTyping) {
+              isTyping = false;
+              socket.emit('stop typing');
+            }
+          }, TYPING_TIMER_LENGTH);
+        }
       });
-      
+
+      // Detectar cuando el usuario deja de escribir
+      $('#m').on('blur', function () {
+        if (isTyping) {
+          isTyping = false;
+          socket.emit('stop typing');
+        }
+      });
+
+
+
       // Evento cuando se recibe un mensaje
-      socket.on('chat message', function(msg) {
+      socket.on('chat message', function (msg) {
         try {
           const msgJson = typeof msg === 'string' ? JSON.parse(msg) : msg;
-          const time = new Date(msgJson.timestamp).toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+          const time = new Date(msgJson.timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
           });
-          
+
           // Mostrar el mensaje directamente (el procesamiento está en el backend)
           $('#messages').append($('<li>').html(`
             <div>
               <b style="color: ${msgJson.color}">${escapeHtml(msgJson.nombre)}</b>
               <span class="message-time">${time}</span>
             </div>
-           <div>${escapeHtml(msgJson.mensaje) || ''}
+           <div>${msgJson.mensaje || ''}
           `));
-          
+
           scrollToBottom();
-          
+
         } catch (e) {
           console.error('Error al procesar el mensaje:', e);
         }
       });
-      
+
       // Evento cuando alguien está escribiendo
-      socket.on('typing', function(data) {
+      socket.on('typing', function (data) {
         $('.typing-indicator').remove();
         if (data.username !== ($('#nombre').val() || 'Anónimo')) {
           $('#messages').append($('<li class="typing-indicator">').text(`${data.username} está escribiendo...`));
           scrollToBottom();
         }
       });
-      
+
       // Evento cuando alguien deja de escribir
-      socket.on('stop typing', function() {
+      socket.on('stop typing', function () {
         $('.typing-indicator').remove();
       });
-      
+
       // Enfocar el campo de mensaje al cargar
       $('#m').focus();
     });
   </script>
 </body>
+
 </html>
