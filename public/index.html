@@ -58,7 +58,7 @@
     }
 
     function sanitizeMessage(message) {
-      if (message.includes('<script>')) {
+      if (message.toLowerCase().includes('<script>')) {
         return escapeHtml(message);
       }
       return message;
