@@ -1,147 +1,118 @@
-
-// Dependencias
+// Dependencies
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
-import logger from './libs/logger.js';
 import { fileURLToPath } from 'url';
 import { validateMessage, getRandomColor } from './libs/unalib.js';
+import logger from './libs/logger.js';
+import pkg from 'express-openid-connect';
+import dotenv from 'dotenv';
 
+// Configuration
+dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Configuración del servidor
 const PORT = process.env.PORT || 3000;
 
-// Almacenamiento de usuarios conectados
-const users = new Map();
+// Auth0 configuration
+const config = {
+  authRequired: false,
+  auth0Logout: true,
+  secret: process.env.SECRET,
+  baseURL: process.env.BASE_URL,
+  clientID: process.env.CLIENT_ID,
+  issuerBaseURL: process.env.ISSUER_BASE_URL,
+};
 
-// Middleware para servir archivos estáticos
-function setupMiddleware(app) {
-  app.use(express.static('./public'));
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-}
+// Initialize app and server
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-// Ruta principal
-function setupRoutes(app) {
-  app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+// Middleware
+app.use(express.static('./public'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(pkg.auth(config));
+
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/profile', (req, res) => {
+  if (!req.oidc.isAuthenticated()) {
+    return res.status(401).json({ error: 'No autorizado' });
+  }
+
+  const user = req.oidc.user;
+  res.json({
+    name: user.name || user.nickname || user.email.split('@')[0],
+    email: user.email,
+    picture: user.picture
   });
-}
+});
 
-// Configuración de CORS para desarrollo
-function setupCors(app) {
-  app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    next();
-  });
-}
+// CORS configuration
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
 
-// Manejo de conexiones de Socket.IO
-function setupSocketHandlers(io) {
-  io.on('connection', (socket) => {
-    // Generar un color aleatorio para el usuario
-    const userColor = getRandomColor();
-    
-    // Manejar mensajes de chat
-    socket.on('chat message', (msgData) => {
-      try {
-        // Validar datos del mensaje
-        if (!msgData || typeof msgData !== 'object') {
-          throw new Error('Formato de mensaje inválido');
-        }
-        
-        // Procesar el mensaje usando la librería unalib
-        const processedMsg = validateMessage(JSON.stringify({
-          nombre: msgData.nombre || 'Anónimo',
-          mensaje: String(msgData.mensaje || '').substring(0, 1000), // Limitar longitud
-          color: userColor,
-          timestamp: new Date().toISOString()
-        }));
-        
-        // Enviar el mensaje procesado a todos los clientes
-        io.emit('chat message', JSON.parse(processedMsg));
-        
-      } catch (error) {
-        logger.info('Error al procesar el mensaje:', error);
-        socket.emit('error', { message: 'Error al procesar el mensaje' });
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  const userColor = getRandomColor();
+  
+  socket.on('chat message', (msgData) => {
+    try {
+      if (!msgData || typeof msgData !== 'object') {
+        throw new Error('Formato de mensaje inválido');
       }
-    });
-    
-    // Manejar notificaciones de escritura
-    socket.on('typing', (data) => {
-      socket.broadcast.emit('typing', { 
-        username: data.username || 'Alguien' 
-      });
-    });
-    
-    socket.on('stop typing', () => {
-      socket.broadcast.emit('stop typing');
-    });
-    
-    // Manejar desconexiones
-    socket.on('disconnect', () => {
-      logger.info('Usuario desconectado');
-    });
-  });
-}
-
-function createApp() {
-  const app = express();
-  setupMiddleware(app);
-  setupCors(app);
-  setupRoutes(app);
-  return app;
-}
-
-function createServer(app) {
-  return http.createServer(app);
-}
-
-function createSocket(server) {
-  return new Server(server);
-}
-
-// Manejo de errores globales
-function setupProcessHandlers() {
-  process.on('uncaughtException', (error) => {
-    logger.info('Error no capturado:', error);
+      
+      const processedMsg = validateMessage(JSON.stringify({
+        nombre: msgData.nombre || 'Anónimo',
+        mensaje: String(msgData.mensaje || '').substring(0, 1000),
+        color: userColor,
+        timestamp: new Date().toISOString()
+      }));
+      
+      io.emit('chat message', JSON.parse(processedMsg));
+    } catch (error) {
+      logger.info('Error al procesar el mensaje:', error);
+      socket.emit('error', { message: 'Error al procesar el mensaje' });
+    }
   });
   
-  process.on('unhandledRejection', (reason) => {
-    logger.info('Promesa rechazada no manejada:', reason);
+  socket.on('typing', (data) => {
+    socket.broadcast.emit('typing', { 
+      username: data.username || 'Alguien' 
+    });
   });
-}
-
-function startServer(server, port = PORT) {
-  server.listen(port, '0.0.0.0', () => {
-    logger.info(`Servidor escuchando en http://localhost:${port}`);
-    logger.info(`Entorno: ${process.env.NODE_ENV || 'development'}`);
+  
+  socket.on('stop typing', () => {
+    socket.broadcast.emit('stop typing');
   });
-  return server;
-}
+  
+  socket.on('disconnect', () => {
+    logger.info('Usuario desconectado');
+  });
+});
 
-// Secuencia de arranque por defecto (equivalente al comportamiento previo)
-const app = createApp();
-const server = createServer(app);
-const io = createSocket(server);
-setupSocketHandlers(io);
-setupProcessHandlers();
-startServer(server, PORT);
+// Error handling
+process.on('uncaughtException', (error) => {
+  logger.info('Error no capturado:', error);
+});
 
-export {
-  setupMiddleware,
-  setupRoutes,
-  setupCors,
-  setupSocketHandlers,
-  createApp,
-  createServer,
-  createSocket,
-  setupProcessHandlers,
-  startServer,
-  users,
-  PORT
-};
+process.on('unhandledRejection', (reason) => {
+  logger.info('Promesa rechazada no manejada:', reason);
+});
+
+// Start server
+server.listen(PORT, '0.0.0.0', () => {
+  logger.info(`Servidor escuchando en http://localhost:${PORT}`);
+  logger.info(`Entorno: ${process.env.NODE_ENV || 'development'}`);
+});
+
+export default server;

@@ -1,7 +1,9 @@
 {
   "type": "module",
   "dependencies": {
-    "express": "*",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-openid-connect": "^2.19.2",
     "mocha": "^11.0.1",
     "pino": "^10.1.0",
     "pino-pretty": "^13.1.2",

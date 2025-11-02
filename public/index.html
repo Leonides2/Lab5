@@ -64,6 +64,15 @@
       return message;
     }
 
+    async function getProfile() {
+      const data = await fetch('/profile')
+      if (data.status === 401) {
+        return null;
+      }
+      const json = await data.json();
+      return json;
+    }
+
     // Inicialización cuando el DOM esté listo
     $(function () {
       // Conectar al servidor
@@ -181,6 +190,14 @@
 
       // Enfocar el campo de mensaje al cargar
       $('#m').focus();
+    });
+
+    $(document).ready(async function() {
+      const profileData = await getProfile();
+      if (profileData) {
+        $('#nombre').val(profileData.name);
+        $('#nombre').attr('disabled', true);
+      }
     });
   </script>
 </body>

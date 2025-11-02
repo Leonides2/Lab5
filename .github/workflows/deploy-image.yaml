@@ -27,4 +27,4 @@ jobs:
           targetPort: 3000
           
 
-          environmentVariables: PORT=3000 NODE_ENV=production
+          environmentVariables: PORT=3000 NODE_ENV=production SECRET=${{ secrets.JWT_SECRET }} BASE_URL=${{ secrets.BASE_URL }} CLIENT_ID=${{ secrets.CLIENT_ID }} ISSUER_BASE_URL=${{ secrets.ISSUER_BASE_URL }}
