@@ -1,10 +1,14 @@
 
 // Dependencias
-const express = require('express');
-const http = require('http');
-const socketIO = require('socket.io');
-const path = require('path');
-const { validateMessage, getRandomColor } = require('./libs/unalib');
+import express from 'express';
+import http from 'http';
+import { Server } from 'socket.io';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { validateMessage, getRandomColor } from './libs/unalib.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configuración del servidor
 const PORT = process.env.PORT || 3000;
@@ -99,7 +103,7 @@ function createServer(app) {
 }
 
 function createSocket(server) {
-  return socketIO(server);
+  return new Server(server);
 }
 
 // Manejo de errores globales
@@ -108,7 +112,7 @@ function setupProcessHandlers() {
     console.error('Error no capturado:', error);
   });
   
-  process.on('unhandledRejection', (reason, promise) => {
+  process.on('unhandledRejection', (reason) => {
     console.error('Promesa rechazada no manejada:', reason);
   });
 }
@@ -129,7 +133,7 @@ setupSocketHandlers(io);
 setupProcessHandlers();
 startServer(server, PORT);
 
-module.exports = {
+export {
   setupMiddleware,
   setupRoutes,
   setupCors,

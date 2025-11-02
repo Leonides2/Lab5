@@ -1,5 +1,5 @@
 // Sanitiza el texto para prevenir XSS y valida URLs seguras
-const xss = require('xss');
+import xss from 'xss';
 
 function sanitizeText(text) {
   if (!text) return '';
@@ -18,8 +18,9 @@ function isSafeUrl(url) {
     }
     return true;
   } catch (e) {
+    console.error(e);
     return false;
   }
 }
 
-module.exports = { sanitizeText, isSafeUrl };
+export { sanitizeText, isSafeUrl };

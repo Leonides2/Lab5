@@ -1,6 +1,6 @@
 // Validación y composición de mensajes de chat
-const { sanitizeText } = require('./sanitize');
-const { procesarURLs } = require('./url');
+import { sanitizeText } from './sanitize.js';
+import { procesarURLs } from './url.js';
 
 function validateMessage(msg) {
   if (!msg || typeof msg !== 'string') {
@@ -33,4 +33,4 @@ function validateMessage(msg) {
   }
 }
 
-module.exports = { validateMessage };
+export { validateMessage };

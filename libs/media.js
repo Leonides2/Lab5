@@ -1,5 +1,5 @@
 // Utilidades para manejo de imagenes y videos
-const { sanitizeText } = require('./sanitize');
+import { sanitizeText } from './sanitize.js';
 
 function is_valid_video_url(url) {
   const re = /\.(mp4|webm|ogg|mov|avi|wmv|flv|mkv)(\?.*)?$/i;
@@ -17,7 +17,7 @@ function getImageTag(url) {
   const safeUrl = sanitizeText(url);
   return `<div class="media-container">
     <img src="${safeUrl}" alt="Imagen compartida" 
-         onerror="this.parentNode.outerHTML='<a href=\'${safeUrl}\' target=\'_blank\' rel=\'noopener noreferrer\'>${safeUrl}</a>'">
+         onerror="this.parentNode.outerHTML='<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>'">
     <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" 
        style="font-size: 11px; color: #7f8c8d;">Ver imagen</a>
   </div>`;
@@ -45,7 +45,7 @@ function getYTVideoId(url){
   return url.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/)[1];
 }
 
-module.exports = {
+export {
   is_valid_video_url,
   getVideoMimeType,
   getImageTag,

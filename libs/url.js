@@ -1,6 +1,6 @@
 // Parsing y utilidades relacionadas a URLs (imagenes, videos, YouTube, links)
-const { sanitizeText, isSafeUrl } = require('./sanitize');
-const { is_valid_video_url, getImageTag, getVideoTag } = require('./media');
+import { sanitizeText, isSafeUrl } from './sanitize.js';
+import { is_valid_video_url, getImageTag, getVideoTag } from './media.js';
 
 function is_valid_url_image(url) {
   let isValid = false;
@@ -9,9 +9,8 @@ function is_valid_url_image(url) {
     isValid = re.test(url);
   } catch (e) {
     console.log(e);
-  } finally {
-    return isValid;
-  }
+  } 
+  return isValid;
 }
 
 function is_valid_yt_video(url) {
@@ -21,9 +20,8 @@ function is_valid_yt_video(url) {
     isValid = re.test(url);
   } catch (e) {
     console.log(e);
-  } finally {
-    return isValid;
-  }
+  } 
+  return isValid;
 }
 
 function isYouTubeUrl(url) {
@@ -112,7 +110,7 @@ function procesarURLs(texto) {
   return result;
 }
 
-module.exports = {
+export {
   is_valid_url_image,
   is_valid_yt_video,
   isYouTubeUrl,

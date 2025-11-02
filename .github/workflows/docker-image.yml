@@ -27,6 +27,12 @@ jobs:
         # que es requerido por el 'npm ci' dentro de tu Dockerfile.
         # Este archivo existe solo durante la ejecución del workflow.
         run: npm install
+      
+      - name: Revisar linter
+        run: npm run lint
+
+      - name: Ejecutar pruebas
+        run: npm run test
 
       - name: Ejecutar Análisis de Seguridad (SAST) con Snyk (Vulnerabilidades de dependencias)
         # Escanea el proyecto para encontrar vulnerabilidades conocidas en las dependencias de npm.
