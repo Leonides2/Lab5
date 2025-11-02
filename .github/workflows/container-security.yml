@@ -2,8 +2,8 @@ name: Container Security Scan
 
 on:
 
-  workflow_dispatch:
-  types: [container-security-scan]
+  repository_dispatch:
+    types: [container-security-scan]
 
 jobs:
   container-security-scan:
