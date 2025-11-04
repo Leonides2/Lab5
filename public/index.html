@@ -2,6 +2,8 @@
 <html>
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>UNA-CHAT</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="img/favicon.svg">
@@ -9,7 +11,10 @@
 
 <body>
   <header>
+    <div class="header-left">
+    <img src="img/favicon.svg" alt="favicon" class="favicon">
     <h1>UNA-CHAT</h1>
+    </div>
     
     <div id="authButtons">
       <div id="profile"></div>
@@ -222,7 +227,7 @@
         $('#loginButton').hide();
         $('#logoutButton').show();
         $('#profile').html(`
-          <img class="profile-picture" src="${profileData.picture}" alt="${profileData.name}">
+          <img class="profile-picture" src="${profileData.picture}" alt="profile-pic">
           <span>${profileData.name}</span>
         `);
       }
