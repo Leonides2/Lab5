@@ -8,6 +8,7 @@ import { validateMessage, getRandomColor } from './libs/unalib.js';
 import logger from './libs/logger.js';
 import pkg from 'express-openid-connect';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
 
 // Configuration
 dotenv.config();
@@ -25,6 +26,7 @@ const config = {
   issuerBaseURL: process.env.ISSUER_BASE_URL,
 };
 
+
 // Initialize app and server
 const app = express();
 const server = http.createServer(app);
@@ -35,6 +37,30 @@ app.use(express.static('./public'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(pkg.auth(config));
+
+
+// Configuración de seguridad
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: [
+        '\'self\'',
+      ],
+      styleSrc: [
+        '\'self\'', 
+        '\'unsafe-inline\'', 
+      ],
+      fontSrc: [
+        '\'self\'', 
+      ],
+      scriptSrc: [
+        '\'self\'', 
+        '\'unsafe-inline\'', 
+      ]
+    }
+  }
+}));
+
 
 
 app.get('/', (req, res) => {
