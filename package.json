@@ -1,6 +1,8 @@
 {
   "type": "module",
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.67.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-openid-connect": "^2.19.2",
