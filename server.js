@@ -1,4 +1,4 @@
-// Dependencies
+// Dependencias
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
@@ -8,14 +8,16 @@ import { validateMessage, getRandomColor } from './libs/unalib.js';
 import logger from './libs/logger.js';
 import pkg from 'express-openid-connect';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
+import cors from 'cors';
 
-// Configuration
-dotenv.config();
+// Configuración general
+dotenv.config({quiet: true});
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 3000;
 
-// Auth0 configuration
+// Configuración de Auth0 (autenticación)
 const config = {
   authRequired: false,
   auth0Logout: true,
@@ -25,16 +27,91 @@ const config = {
   issuerBaseURL: process.env.ISSUER_BASE_URL,
 };
 
-// Initialize app and server
+
+// Inicialización de Express y servidor HTTP
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
 
-// Middleware
-app.use(express.static('./public'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Lista de orígenes permitidos para CORS
+// Ejemplo: 'http://localhost:3000,https://mi-app.com' se convierte en ['http://localhost:3000', 'https://mi-app.com']
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'];
+
+// Configuración de Socket.IO con CORS
+// Socket.IO es la librería que permite comunicación en tiempo real (chat)
+const io = new Server(server, {
+  cors: {
+    // Función que valida si un origen está permitido
+    origin: (origin, callback) => {
+      // Permitir peticiones sin origen (apps móviles, curl, Postman)
+      if (!origin) return callback(null, true);
+      
+      // Verificar si el origen está en la lista de permitidos O es el mismo dominio (BASE_URL)
+      if (allowedOrigins.includes(origin) || origin === process.env.BASE_URL) {
+        callback(null, true); // Permitir la conexión
+      } else {
+        callback(new Error('No permitido por CORS')); // Rechazar la conexión
+      }
+    },
+    methods: ['GET', 'POST'], // Métodos HTTP permitidos
+    credentials: true, // Permitir cookies y headers de autenticación
+    allowedHeaders: ['Content-Type', 'Authorization'] // Headers permitidos
+  },
+  allowEIO3: true // Habilitar compatibilidad con clientes antiguos de Socket.IO
+});
+
+// Middleware - La seguridad va primero
+// Helmet configura cabeceras HTTP de seguridad
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      connectSrc: ["'self'", 'ws:', 'wss:', 'https://cdn.socket.io'], // Permitir WebSocket y CDN de Socket.IO
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      fontSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.socket.io", "https://code.jquery.com"],
+      imgSrc: ["'self'", 'data:', 'https:'], // Permitir imágenes de HTTPS y data URIs
+      frameSrc: ["'self'", 'https://www.youtube.com', 'https://www.youtube-nocookie.com'], // Permitir iframes solo de YouTube
+      mediaSrc: ["'self'", 'https:', 'blob:'], // Permitir video/audio de cualquier fuente HTTPS
+      objectSrc: ["'none'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false, // Deshabilitado para compatibilidad con Socket.IO
+  crossOriginResourcePolicy: { policy: 'cross-origin' } // Permitir recursos cross-origin para Socket.IO
+}));
+
+// Configuración de CORS (Cross-Origin Resource Sharing)
+// Controla qué dominios pueden hacer peticiones a este servidor
+const corsOptions = {
+  // Función que valida el origen de cada petición
+  origin: (origin, callback) => {
+    // Permitir peticiones sin origen (apps móviles, curl, Postman)
+    if (!origin) return callback(null, true);
+    
+    // Verificar si el origen está en la lista permitida O es el mismo dominio
+    if (allowedOrigins.includes(origin) || origin === process.env.BASE_URL) {
+      callback(null, true); // Permitir
+    } else {
+      callback(null, false); // Rechazar silenciosamente
+    }
+  },
+  credentials: true, // Permitir cookies y headers de autenticación
+  optionsSuccessStatus: 200, // Código de éxito para navegadores antiguos
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos HTTP permitidos
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'] // Headers permitidos
+};
+app.use(cors(corsOptions));
+
+
+// Parsers de cuerpo de peticiones
+app.use(express.json({ limit: '10kb' })); // Limitar tamaño de JSON a 10KB (previene DoS)
+app.use(express.urlencoded({ extended: true, limit: '10kb' })); // Limitar tamaño de formularios
+
+// Autenticación con Auth0
 app.use(pkg.auth(config));
+
+// Servir archivos estáticos (HTML, CSS, JS, imágenes)
+app.use(express.static('./public'));
+
 
 
 app.get('/', (req, res) => {
@@ -42,26 +119,25 @@ app.get('/', (req, res) => {
 });
 
 app.get('/profile', (req, res) => {
-  if (!req.oidc.isAuthenticated()) {
-    return res.status(401).json({ error: 'No autorizado' });
+  try {
+    if (!req.oidc.isAuthenticated()) {
+      return res.status(401).json({ authenticated: false });
+    }
+
+    const user = req.oidc.user;
+    res.json({
+      authenticated: true,
+      name: user.name || user.nickname || user.email.split('@')[0],
+      email: user.email,
+      picture: user.picture
+    });
+  } catch (error) {
+    logger.error('Error en /profile:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
-
-  const user = req.oidc.user;
-  res.json({
-    name: user.name || user.nickname || user.email.split('@')[0],
-    email: user.email,
-    picture: user.picture
-  });
 });
 
-// CORS configuration
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
-
-// Socket.IO connection handling
+// Manejo de conexiones de Socket.IO (chat en tiempo real)
 io.on('connection', (socket) => {
   const userColor = getRandomColor();
   
@@ -100,16 +176,18 @@ io.on('connection', (socket) => {
   });
 });
 
-// Error handling
+// Manejo de errores globales
 process.on('uncaughtException', (error) => {
-  logger.info('Error no capturado:', error);
+  logger.error('Error no capturado:', error);
+  process.exit(1);
 });
 
 process.on('unhandledRejection', (reason) => {
-  logger.info('Promesa rechazada no manejada:', reason);
+  logger.error('Promesa rechazada no manejada:', reason);
+  process.exit(1);
 });
 
-// Start server
+// Iniciar el servidor
 server.listen(PORT, '0.0.0.0', () => {
   logger.info(`Servidor escuchando en http://localhost:${PORT}`);
   logger.info(`Entorno: ${process.env.NODE_ENV || 'development'}`);

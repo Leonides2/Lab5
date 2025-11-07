@@ -84,12 +84,26 @@
     }
 
     async function getProfile() {
-      const data = await fetch('/profile')
-      if (data.status === 401) {
+      try {
+        const response = await fetch('/profile', {
+          credentials: 'same-origin'
+        });
+        
+        if (response.status === 401) {
+          return null;
+        }
+        
+        const json = await response.json();
+        
+        if (json.authenticated === false) {
+          return null;
+        }
+        
+        return json;
+      } catch (error) {
+        console.error('Error al obtener perfil:', error);
         return null;
       }
-      const json = await data.json();
-      return json;
     }
 
     // Inicialización cuando el DOM esté listo

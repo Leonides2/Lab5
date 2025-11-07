@@ -27,4 +27,14 @@ jobs:
           targetPort: 3000
           
 
-          environmentVariables: PORT=3000 NODE_ENV=production SECRET=${{ secrets.JWT_SECRET }} BASE_URL=${{ secrets.BASE_URL }} CLIENT_ID=${{ secrets.CLIENT_ID }} ISSUER_BASE_URL=${{ secrets.ISSUER_BASE_URL }}
+          environmentVariables: PORT=3000 NODE_ENV=production SECRET=${{ secrets.JWT_SECRET }} BASE_URL=${{ secrets.BASE_URL }} CLIENT_ID=${{ secrets.CLIENT_ID }} ISSUER_BASE_URL=${{ secrets.ISSUER_BASE_URL }} ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
+
+      - name: Disparar (Trigger) el Workflow de Nuclei
+        # Este paso notifica a otro workflow (que tú crearás) que la imagen está lista.
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          # Usamos el token automático de GitHub. Asegúrate que las 'Workflow permissions' 
+          # en la configuración del repo estén en 'Read and write'.
+          token: ${{ secrets.GITHUB_TOKEN }} 
+          # Nombre del evento que el otro workflow debe escuchar
+          event-type: nuclei

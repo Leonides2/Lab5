@@ -17,10 +17,11 @@ const whiteList = {
   pre: [],
   code: [],
   span: ['style'],
-  div: ['style'],
-  img: ['src', 'alt', 'title', 'style'],
+  div: ['style', 'class'],
+  img: ['src', 'alt', 'title', 'style', 'onerror'],
   video: ['src', 'controls', 'width', 'height', 'style'],
-  source: ['src', 'type']
+  source: ['src', 'type'],
+  iframe: ['src', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'referrerpolicy']
 };
 
 const styleWhiteList = [
@@ -34,6 +35,17 @@ const xssOptions = {
   css: {
     whiteList: {
       '*': styleWhiteList
+    }
+  },
+  onTagAttr: function(tag, name, value) {
+    // Validar que los iframes solo sean de YouTube
+    if (tag === 'iframe' && name === 'src') {
+      if (value.startsWith('https://www.youtube.com/embed/') || 
+          value.startsWith('https://www.youtube-nocookie.com/embed/')) {
+        return `${name}="${xss.escapeAttrValue(value)}"`;
+      }
+      // Si no es de YouTube, bloquear el iframe
+      return '';
     }
   },
   onIgnoreTagAttr: function(tag, name, value, isWhiteAttr) {
