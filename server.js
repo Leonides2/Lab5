@@ -9,6 +9,13 @@ import logger from './libs/logger.js';
 import pkg from 'express-openid-connect';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+
+// Rate limit configuration
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 5 // limit each IP to 5 requests per windowMs
+});
 
 // Configuration
 dotenv.config();
@@ -34,6 +41,7 @@ const io = new Server(server);
 
 // Middleware
 app.use(express.static('./public'));
+app.use(limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(pkg.auth(config));
@@ -64,6 +72,7 @@ app.use(helmet({
 
 
 app.get('/', (req, res) => {
+
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
