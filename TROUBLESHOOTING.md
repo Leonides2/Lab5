@@ -58,6 +58,66 @@ Para verificar que CORS está funcionando correctamente:
    - `Access-Control-Allow-Origin: https://tu-dominio.azurecontainerapps.io`
    - `Access-Control-Allow-Credentials: true`
 
+## Error 153 de YouTube (Reproductor mal configurado)
+
+### Síntomas
+- El iframe de YouTube aparece pero muestra "Error 153"
+- Mensaje: "El reproductor de YouTube está mal configurado"
+- El video no se reproduce
+
+### Causas Comunes
+
+1. **Cookies de terceros bloqueadas**: El navegador bloquea cookies de YouTube
+2. **Contenido mixto**: Página HTTP intentando cargar iframe HTTPS
+3. **Restricciones del video**: El video no permite embedding
+4. **CSP demasiado restrictivo**: Content Security Policy bloquea el iframe
+
+### Solución
+
+#### Opción 1: Usar youtube-nocookie.com (Recomendado)
+La aplicación ahora usa `youtube-nocookie.com` por defecto, que es más permisivo con cookies:
+
+```javascript
+src="https://www.youtube-nocookie.com/embed/VIDEO_ID"
+```
+
+#### Opción 2: Habilitar cookies de terceros en el navegador
+
+**Chrome/Edge:**
+1. Configuración → Privacidad y seguridad
+2. Cookies y otros datos de sitios
+3. Permitir cookies de terceros
+
+**Firefox:**
+1. Configuración → Privacidad y seguridad
+2. Protección contra rastreo mejorada → Estándar
+
+#### Opción 3: Verificar que el video permite embedding
+
+Algunos videos de YouTube tienen restricciones de embedding. Prueba con otro video.
+
+**Videos de prueba que funcionan:**
+- `https://www.youtube.com/watch?v=dQw4w9WgXcQ`
+- `https://www.youtube.com/watch?v=jNQXAC9IVRw`
+
+#### Opción 4: Verificar CSP
+
+Asegúrate de que el CSP permite iframes de YouTube:
+
+```
+frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com
+```
+
+### Verificación
+
+Después de aplicar la solución:
+
+1. Recarga la página (Ctrl+F5 o Cmd+Shift+R)
+2. Abre DevTools → Console
+3. Verifica que no haya errores de CSP
+4. Envía una URL de YouTube en el chat
+5. El video debería reproducirse correctamente
+
 ## Error 401 en `/profile`
 
 ### Síntomas

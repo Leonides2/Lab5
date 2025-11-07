@@ -11,7 +11,9 @@ Helmet configura automáticamente varias cabeceras HTTP para proteger contra vul
   - `styleSrc`: Permite estilos inline (necesario para algunos frameworks)
   - `scriptSrc`: Permite scripts inline y CDNs específicos (Socket.IO, jQuery)
   - `imgSrc`: Permite imágenes de HTTPS y data URIs
-  - `frameSrc` y `objectSrc`: Bloqueados para prevenir clickjacking
+  - `frameSrc`: Permite iframes solo de YouTube (www.youtube.com y youtube-nocookie.com)
+  - `mediaSrc`: Permite video/audio de cualquier fuente HTTPS
+  - `objectSrc`: Bloqueado para prevenir plugins inseguros
 
 - **Cross-Origin Policies**: Configurado para compatibilidad con Socket.IO
   - `crossOriginEmbedderPolicy`: Deshabilitado
@@ -66,6 +68,29 @@ const io = new Server(server, {
   }
 });
 ```
+
+### 6. **Sanitización XSS**
+Protección contra ataques XSS usando la librería `xss`:
+
+**Whitelist de Tags HTML Permitidos:**
+- Tags de texto: `a`, `b`, `strong`, `i`, `em`, `u`, `p`, `span`, `div`
+- Tags de lista: `ul`, `ol`, `li`
+- Tags de código: `pre`, `code`, `blockquote`
+- Tags multimedia: `img`, `video`, `source`, `iframe`
+
+**Validación Especial para Iframes:**
+- Solo se permiten iframes de YouTube (`https://www.youtube.com/embed/` o `https://www.youtube-nocookie.com/embed/`)
+- Cualquier otro iframe es bloqueado automáticamente
+
+**Atributos Permitidos:**
+- `img`: `src`, `alt`, `title`, `style`, `onerror`
+- `video`: `src`, `controls`, `width`, `height`, `style`
+- `iframe`: `src`, `width`, `height`, `frameborder`, `allow`, `allowfullscreen`
+- `a`: `href`, `title`, `target`, `rel`
+
+**Estilos CSS Permitidos:**
+- `color`, `background-color`, `font-size`, `font-weight`, `font-style`
+- `text-decoration`, `text-align`, `width`, `height`, `max-width`, `max-height`
 
 ## Orden de Middleware (Importante)
 
