@@ -1,11 +1,11 @@
-name: CI
+name: Security Scan - Nuclei (Production)
 on: 
 
   repository_dispatch:
     types: [nuclei]
 
 jobs:
-  build:
+  nuclei-scan:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
