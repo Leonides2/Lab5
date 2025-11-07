@@ -15,32 +15,31 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           
-      # 2. Despliegue a Azure Container App
+      # 2. Despliegue a Azure Container App con nombre de revisión único
       - name: Desplegar imagen a Azure Container App
-        uses: azure/container-apps-deploy-action@v1
-        with:
-          # Sustituye estos valores con los de tu entorno Azure
-          resourceGroup: 'UNA-CHAT'
-          containerAppName: 'una-chat-app'
-          # Se usa el tag de la imagen que se leyó del evento disparador
-          imageToDeploy: ${{ secrets.DOCKER_USERNAME }}/lab5:latest
-          targetPort: 3000
-          # Nombre único de la revisión usando el SHA corto del commit y run number
-          revisionSuffix: r${{ github.event.client_payload.run_number || github.run_number }}
+        run: |
+          REVISION_SUFFIX="r${{ github.event.client_payload.run_number || github.run_number }}"
           
-          environmentVariables: |
-            PORT=3000
-            NODE_ENV=production
-            SECRET=${{ secrets.JWT_SECRET }}
-            BASE_URL=${{ secrets.BASE_URL }}
-            CLIENT_ID=${{ secrets.CLIENT_ID }}
-            ISSUER_BASE_URL=${{ secrets.ISSUER_BASE_URL }}
-            ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
-            OTEL_TRACES_EXPORTER=${{ secrets.OTEL_TRACES_EXPORTER }}
-            OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${{ secrets.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT }}
-            OTEL_NODE_RESOURCE_DETECTORS=${{ secrets.OTEL_NODE_RESOURCE_DETECTORS }}
-            OTEL_SERVICE_NAME=${{ secrets.OTEL_SERVICE_NAME }}
-            OTEL_EXPORTER_OTLP_HEADERS=${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}
+          az containerapp update \
+            --name una-chat-app \
+            --resource-group UNA-CHAT \
+            --image ${{ secrets.DOCKER_USERNAME }}/lab5:latest \
+            --revision-suffix $REVISION_SUFFIX \
+            --set-env-vars \
+              PORT=3000 \
+              NODE_ENV=production \
+              SECRET=${{ secrets.JWT_SECRET }} \
+              BASE_URL=${{ secrets.BASE_URL }} \
+              CLIENT_ID=${{ secrets.CLIENT_ID }} \
+              ISSUER_BASE_URL=${{ secrets.ISSUER_BASE_URL }} \
+              ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }} \
+              OTEL_TRACES_EXPORTER=${{ secrets.OTEL_TRACES_EXPORTER }} \
+              OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${{ secrets.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT }} \
+              OTEL_NODE_RESOURCE_DETECTORS=${{ secrets.OTEL_NODE_RESOURCE_DETECTORS }} \
+              OTEL_SERVICE_NAME=${{ secrets.OTEL_SERVICE_NAME }} \
+              OTEL_EXPORTER_OTLP_HEADERS="${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}"
+          
+          echo "✅ Despliegue completado con revisión: $REVISION_SUFFIX"
 
       - name: Disparar (Trigger) el Workflow de Nuclei
         # Este paso notifica a otro workflow (que tú crearás) que la imagen está lista.
