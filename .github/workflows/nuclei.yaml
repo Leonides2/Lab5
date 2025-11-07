@@ -13,5 +13,6 @@ jobs:
       uses: projectdiscovery/nuclei-action@main
       with:
         target: ${{ secrets.BASE_URL }}
+        flags: "-severity critical,high,medium,low -stats"
         github-report: true
         github-token: ${{ secrets.GITHUB_TOKEN }}
