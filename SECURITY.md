@@ -7,9 +7,9 @@ Helmet configura automáticamente varias cabeceras HTTP para proteger contra vul
 
 - **Content Security Policy (CSP)**: Controla qué recursos pueden cargarse
   - `defaultSrc`: Solo permite recursos del mismo origen
-  - `connectSrc`: Permite WebSocket (ws/wss) para Socket.IO
+  - `connectSrc`: Permite WebSocket (ws/wss) y CDN de Socket.IO para source maps
   - `styleSrc`: Permite estilos inline (necesario para algunos frameworks)
-  - `scriptSrc`: Permite scripts inline
+  - `scriptSrc`: Permite scripts inline y CDNs específicos (Socket.IO, jQuery)
   - `imgSrc`: Permite imágenes de HTTPS y data URIs
   - `frameSrc` y `objectSrc`: Bloqueados para prevenir clickjacking
 

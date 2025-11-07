@@ -1,5 +1,8 @@
 name: CI
-on: [push]
+on: 
+
+repository_dispatch:
+    types: [nuclei]
 
 jobs:
   build:
@@ -9,6 +12,6 @@ jobs:
     - name: Run Nuclei
       uses: projectdiscovery/nuclei-action@main
       with:
-        target: "https://una-chat-app.bluepebble-d90e530f.westus2.azurecontainerapps.io/"
+        target: ${{ secrets.BASE_URL }}
         github-report: true
         github-token: ${{ secrets.GITHUB_TOKEN }}

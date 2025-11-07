@@ -47,7 +47,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      connectSrc: ["'self'", 'ws:', 'wss:'], // Allow WebSocket connections for Socket.IO
+      connectSrc: ["'self'", 'ws:', 'wss:', 'https://cdn.socket.io'], // Allow WebSocket and Socket.IO CDN
       styleSrc: ["'self'", "'unsafe-inline'"],
       fontSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.socket.io", "https://code.jquery.com"],
@@ -88,16 +88,22 @@ app.get('/', (req, res) => {
 });
 
 app.get('/profile', (req, res) => {
-  if (!req.oidc.isAuthenticated()) {
-    return res.status(401).json({ error: 'No autorizado' });
-  }
+  try {
+    if (!req.oidc.isAuthenticated()) {
+      return res.status(401).json({ authenticated: false });
+    }
 
-  const user = req.oidc.user;
-  res.json({
-    name: user.name || user.nickname || user.email.split('@')[0],
-    email: user.email,
-    picture: user.picture
-  });
+    const user = req.oidc.user;
+    res.json({
+      authenticated: true,
+      name: user.name || user.nickname || user.email.split('@')[0],
+      email: user.email,
+      picture: user.picture
+    });
+  } catch (error) {
+    logger.error('Error en /profile:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
 });
 
 // Socket.IO connection handling

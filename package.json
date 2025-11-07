@@ -10,7 +10,7 @@
     "mocha": "^11.0.1",
     "pino": "^10.1.0",
     "pino-pretty": "^13.1.2",
-    "socket.io": "*",
+    "socket.io": "^4.7.2",
     "xss": "^1.0.15"
   },
   "scripts": {
