@@ -27,7 +27,7 @@ jobs:
           targetPort: 3000
           
 
-          environmentVariables: PORT=3000 NODE_ENV=production SECRET=${{ secrets.JWT_SECRET }} BASE_URL=${{ secrets.BASE_URL }} CLIENT_ID=${{ secrets.CLIENT_ID }} ISSUER_BASE_URL=${{ secrets.ISSUER_BASE_URL }} ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
+          environmentVariables: PORT=3000 NODE_ENV=production SECRET=${{ secrets.JWT_SECRET }} BASE_URL=${{ secrets.BASE_URL }} CLIENT_ID=${{ secrets.CLIENT_ID }} ISSUER_BASE_URL=${{ secrets.ISSUER_BASE_URL }} ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }} OTEL_TRACES_EXPORTER=${{ secrets.OTEL_TRACES_EXPORTER }} OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${{ secrets.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT }} OTEL_NODE_RESOURCE_DETECTORS=${{ secrets.OTEL_NODE_RESOURCE_DETECTORS }} OTEL_SERVICE_NAME=${{ secrets.OTEL_SERVICE_NAME }} OTEL_EXPORTER_OTLP_HEADERS=${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }} NODE_OPTIONS=${{ secrets.NODE_OPTIONS }}
 
       - name: Disparar (Trigger) el Workflow de Nuclei
         # Este paso notifica a otro workflow (que tú crearás) que la imagen está lista.
