@@ -97,3 +97,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }} 
           # Nombre del evento que el otro workflow debe escuchar
           event-type: container-security-scan
+          client-payload: '{"sha": "${{ github.sha }}", "run_number": "${{ github.run_number }}"}'

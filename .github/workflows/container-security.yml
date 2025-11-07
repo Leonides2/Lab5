@@ -56,4 +56,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           # Dispara el flujo de Azure Container App, enviando la imagen escaneada
           event-type: deploy_azure_container
-          client-payload: '{"status": "success", "scan_results": "No se encontraron vulnerabilidades críticas o altas"}'
+          client-payload: '{"status": "success", "scan_results": "No se encontraron vulnerabilidades críticas o altas", "sha": "${{ github.event.client_payload.sha }}", "run_number": "${{ github.event.client_payload.run_number }}"}'
