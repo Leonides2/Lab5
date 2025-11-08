@@ -30,12 +30,7 @@ jobs:
               BASE_URL=${{ secrets.BASE_URL }} \
               CLIENT_ID=${{ secrets.CLIENT_ID }} \
               ISSUER_BASE_URL=${{ secrets.ISSUER_BASE_URL }} \
-              ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }} \
-              OTEL_TRACES_EXPORTER=${{ secrets.OTEL_TRACES_EXPORTER }} \
-              OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${{ secrets.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT }} \
-              OTEL_NODE_RESOURCE_DETECTORS=${{ secrets.OTEL_NODE_RESOURCE_DETECTORS }} \
-              OTEL_SERVICE_NAME=${{ secrets.OTEL_SERVICE_NAME }} \
-              OTEL_EXPORTER_OTLP_HEADERS="${{ secrets.OTEL_EXPORTER_OTLP_HEADERS }}"
+              ALLOWED_ORIGINS="${{ secrets.ALLOWED_ORIGINS }}"
           
           echo "✅ Despliegue completado con revisión: $REVISION_SUFFIX"
 
