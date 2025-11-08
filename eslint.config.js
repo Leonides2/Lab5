@@ -16,7 +16,6 @@ export default [
     },
     rules: {
       'no-console': 'off',
-      'indent': ['error', 2],
       'semi': ['error', 'always']
     }
   }
