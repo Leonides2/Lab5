@@ -248,8 +248,8 @@ https://youtu.be/dQw4w9WgXcQ
 
 ### Probar imágenes
 ```
-https://picsum.photos/200/300
-https://via.placeholder.com/150
+https://1.bp.blogspot.com/-k6YHsdBim8A/U3Tx5GFbXYI/AAAAAAACMqQ/BMgDHUHbkZs/s1600/imagenes-gratis-para-ver-y-compartir-en-facebook-y-google+-fotos-free-photos-to-share+(16).jpg
+https://miro.medium.com/v2/resize:fit:1000/1*2UBkJVqVgCIqzwuXZibRWg.jpeg
 ```
 
 ### Probar videos directos

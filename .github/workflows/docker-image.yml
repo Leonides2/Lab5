@@ -18,11 +18,10 @@ jobs:
         # Instala Node.js para poder ejecutar comandos de npm
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Ajusta esto a la versión de Node que necesite tu proyecto Express.js
+          node-version: '20'
           
       - name: Generar package-lock.json para Docker build
-        # Ejecuta 'npm install' para generar el archivo package-lock.json 
-        # que es requerido por el 'npm ci' dentro de tu Dockerfile.
+        # Ejecuta 'npm install' para generar el archivo package-lock.json
         # Este archivo existe solo durante la ejecución del workflow.
         run: npm install
       
@@ -80,8 +79,6 @@ jobs:
           push: true
           # Usar los tags generados en el paso anterior
           tags: ${{ steps.meta.outputs.tags }}
-          # Opcional: Especificar el Dockerfile si no se llama 'Dockerfile'
-          # file: ./Dockerfile
           
           # Configuración de caché para acelerar futuras construcciones
           cache-from: type=gha
@@ -92,8 +89,7 @@ jobs:
         # Este paso notifica a otro workflow (que tú crearás) que la imagen está lista.
         uses: peter-evans/repository-dispatch@v3
         with:
-          # Usamos el token automático de GitHub. Asegúrate que las 'Workflow permissions' 
-          # en la configuración del repo estén en 'Read and write'.
+
           token: ${{ secrets.GITHUB_TOKEN }} 
           # Nombre del evento que el otro workflow debe escuchar
           event-type: container-security-scan

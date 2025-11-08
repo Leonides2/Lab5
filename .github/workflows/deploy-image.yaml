@@ -1,7 +1,6 @@
 name: Despliegue a Azure Container App
 
 on:
-  # El segundo workflow debe escuchar el evento 'repository_dispatch'
   repository_dispatch:
     types: [deploy_azure_container]
 
@@ -15,7 +14,6 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           
-      # 2. Despliegue a Azure Container App con nombre de revisión único
       - name: Desplegar imagen a Azure Container App
         run: |
           REVISION_SUFFIX="r${{ github.event.client_payload.run_number || github.run_number }}"
@@ -45,8 +43,5 @@ jobs:
         # Este paso notifica a otro workflow (que tú crearás) que la imagen está lista.
         uses: peter-evans/repository-dispatch@v3
         with:
-          # Usamos el token automático de GitHub. Asegúrate que las 'Workflow permissions' 
-          # en la configuración del repo estén en 'Read and write'.
           token: ${{ secrets.GITHUB_TOKEN }} 
-          # Nombre del evento que el otro workflow debe escuchar
           event-type: nuclei
